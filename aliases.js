@@ -1,6 +1,8 @@
 var ALIASES = {};
-ALIASES['cslice'] = {};
-ALIASES['neon'] = {};
-ALIASES['neon_runtime'] = {};
-ALIASES['semver'] = {};
-ALIASES['semver_parser'] = {};
+ALIASES["cfg_if"] = {};
+ALIASES["cslice"] = {};
+ALIASES["neon"] = {};
+ALIASES["neon_runtime"] = {};
+ALIASES["neon_sys"] = {};
+ALIASES["semver"] = {};
+ALIASES["semver_parser"] = {};
