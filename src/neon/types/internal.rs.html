@@ -120,7 +120,7 @@
                 <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">info</span>.<span class="ident">data</span>(<span class="ident">env</span>);
                 <span class="kw">let</span> <span class="ident">dynamic_callback</span>: <span class="kw">fn</span>(<span class="ident">FunctionContext</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">JsResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span>
                     <span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="ident">neon_runtime</span>::<span class="ident">fun</span>::<span class="ident">get_dynamic_callback</span>(<span class="ident">env</span>.<span class="ident">to_raw</span>(), <span class="ident">data</span>));
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">convert_panics</span>(<span class="op">|</span><span class="op">|</span> { <span class="ident">dynamic_callback</span>(<span class="ident">cx</span>) }) {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">convert_panics</span>(<span class="ident">env</span>, <span class="op">|</span><span class="op">|</span> { <span class="ident">dynamic_callback</span>(<span class="ident">cx</span>) }) {
                     <span class="ident">info</span>.<span class="ident">set_return</span>(<span class="ident">value</span>);
                 }
             })
@@ -140,16 +140,16 @@
                 <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">info</span>.<span class="ident">data</span>(<span class="ident">env</span>);
                 <span class="kw">let</span> <span class="ident">dynamic_callback</span>: <span class="kw">fn</span>(<span class="ident">FunctionContext</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">JsResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span>
                     <span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="ident">neon_runtime</span>::<span class="ident">fun</span>::<span class="ident">get_dynamic_callback</span>(<span class="ident">env</span>.<span class="ident">to_raw</span>(), <span class="ident">data</span>));
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">convert_panics</span>(<span class="op">|</span><span class="op">|</span> { <span class="ident">dynamic_callback</span>(<span class="ident">cx</span>) }) {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">convert_panics</span>(<span class="ident">env</span>, <span class="op">|</span><span class="op">|</span> { <span class="ident">dynamic_callback</span>(<span class="ident">cx</span>) }) {
                     <span class="ident">value</span>.<span class="ident">to_raw</span>()
                 } <span class="kw">else</span> {
-                    <span class="comment">// What should we return if the function panicked?</span>
-                    <span class="comment">//</span>
-                    <span class="comment">// `ptr::null_mut()` may work, but we should have a test to verify that, which</span>
-                    <span class="comment">// can be created after [#505][0]. For now, let&#39;s not guess!</span>
-                    <span class="comment">//</span>
-                    <span class="comment">// [0]: https://github.com/neon-bindings/neon/pull/505.</span>
-                    <span class="macro">unimplemented</span><span class="macro">!</span>(<span class="string">&quot;cannot return from function after a panic&quot;</span>)
+                    <span class="comment">// We do not have a Js Value to return, most likely due to an exception.</span>
+                    <span class="comment">// If we are in a throwing state, constructing a Js Value would be invalid.</span>
+                    <span class="comment">// While not explicitly written, the N-API documentation includes many examples</span>
+                    <span class="comment">// of returning `NULL` when a native function does not return a value.</span>
+                    <span class="comment">// Note, `raw::Local` in this context is a type alias for `*mut napi_value` and not a struct</span>
+                    <span class="comment">// https://nodejs.org/api/n-api.html#n_api_napi_create_function</span>
+                    <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>()
                 }
             })
         }
@@ -160,4 +160,4 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "neon";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "neon";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
